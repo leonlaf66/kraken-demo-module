@@ -1,7 +1,3 @@
-# =============================================================================
-# Locals - Dynamic Resource Mapping
-# =============================================================================
-
 locals {
   # Layer -> Sensitivity -> Bucket ARN mapping
   bucket_map = {
@@ -39,9 +35,7 @@ locals {
   user_group_buckets = {
     for group_name, config in var.user_groups : group_name => flatten([
       for layer in config.layers : [
-        # Always include public buckets for allowed layers
         local.bucket_map[layer]["public"],
-        # Include MNPI buckets only if mnpi_access is true
         config.mnpi_access ? local.bucket_map[layer]["mnpi"] : null
       ]
     ])

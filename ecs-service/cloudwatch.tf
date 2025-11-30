@@ -1,7 +1,3 @@
-################################################################################
-# CloudWatch Log Groups (one per service)
-################################################################################
-
 resource "aws_cloudwatch_log_group" "services" {
   for_each = var.services
 

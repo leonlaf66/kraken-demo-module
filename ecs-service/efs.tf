@@ -1,7 +1,4 @@
-################################################################################
 # EFS File System
-################################################################################
-
 resource "aws_efs_file_system" "this" {
   creation_token   = "${var.app_name}-${var.environment}-efs"
   performance_mode = var.efs_performance_mode
@@ -24,10 +21,7 @@ resource "aws_efs_file_system" "this" {
   )
 }
 
-################################################################################
 # EFS Mount Targets (one per subnet)
-################################################################################
-
 resource "aws_efs_mount_target" "this" {
   for_each = toset(var.private_subnet_ids)
 
@@ -36,10 +30,7 @@ resource "aws_efs_mount_target" "this" {
   security_groups = [aws_security_group.efs.id]
 }
 
-################################################################################
 # EFS Access Points (one per service-volume combination)
-################################################################################
-
 resource "aws_efs_access_point" "this" {
   for_each = local.efs_access_points
 
@@ -69,10 +60,7 @@ resource "aws_efs_access_point" "this" {
   )
 }
 
-################################################################################
 # EFS Backup Policy
-################################################################################
-
 resource "aws_efs_backup_policy" "this" {
   file_system_id = aws_efs_file_system.this.id
 

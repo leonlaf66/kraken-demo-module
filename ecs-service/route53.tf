@@ -1,7 +1,3 @@
-################################################################################
-# Route53 DNS Records for ALBs
-################################################################################
-
 resource "aws_route53_record" "alb" {
   for_each = local.services_with_route53
 
@@ -15,11 +11,6 @@ resource "aws_route53_record" "alb" {
     evaluate_target_health = true
   }
 }
-
-################################################################################
-# Locals for DNS names
-################################################################################
-
 locals {
   # Service DNS names from Route53 records
   service_dns_names = {

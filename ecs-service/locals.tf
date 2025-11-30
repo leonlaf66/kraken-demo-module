@@ -1,7 +1,3 @@
-################################################################################
-# Locals
-################################################################################
-
 locals {
   # Cluster name
   cluster_name = coalesce(var.cluster_name, "${var.app_name}-${var.environment}-cluster")

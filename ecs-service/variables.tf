@@ -1,7 +1,4 @@
-################################################################################
 # General
-################################################################################
-
 variable "app_name" {
   description = "App name prefix for all resources"
   type        = string
@@ -28,10 +25,7 @@ variable "common_tags" {
   default     = {}
 }
 
-################################################################################
 # Networking
-################################################################################
-
 variable "vpc_id" {
   description = "VPC ID where resources will be created"
   type        = string
@@ -42,10 +36,7 @@ variable "private_subnet_ids" {
   type        = list(string)
 }
 
-################################################################################
 # ECS Cluster
-################################################################################
-
 variable "cluster_name" {
   description = "Name of the ECS cluster"
   type        = string
@@ -58,29 +49,23 @@ variable "container_insights" {
   default     = true
 }
 
-################################################################################
 # TLS/SSL Certificate
-################################################################################
-
 variable "acm_certificate_arn" {
   description = "ARN of ACM certificate for HTTPS listeners"
   type        = string
   default     = null
 }
 
-################################################################################
 # Services Configuration
-################################################################################
-
 variable "services" {
   description = "Map of ECS services to create"
   type = map(object({
     # Container Image
-    image = string  # Full image URI with tag (e.g., 123456789.dkr.ecr.us-east-1.amazonaws.com/my-app:v1.0.0)
+    image = string
 
     # Resource allocation
-    cpu    = number  # CPU units (256, 512, 1024, 2048, 4096)
-    memory = number  # Memory in MiB
+    cpu    = number
+    memory = number
 
     # Scaling
     desired_count = optional(number, 1)
@@ -152,10 +137,7 @@ variable "services" {
   }
 }
 
-################################################################################
 # EFS Configuration
-################################################################################
-
 variable "efs_performance_mode" {
   description = "EFS performance mode (generalPurpose or maxIO)"
   type        = string
@@ -168,20 +150,20 @@ variable "efs_throughput_mode" {
   default     = "bursting"
 }
 
-################################################################################
 # IAM
-################################################################################
-
 variable "task_role_additional_policies" {
   description = "Additional IAM policy ARNs to attach to task role"
   type        = list(string)
   default     = []
 }
 
-################################################################################
-# Security Groups
-################################################################################
+variable "iam_permissions_boundary_arn" {
+  description = "ARN of the IAM permissions boundary to attach to roles"
+  type        = string
+  default     = null
+}
 
+# Security Groups
 variable "alb_ingress_cidr_blocks" {
   description = "CIDR blocks allowed to access ALB"
   type        = list(string)

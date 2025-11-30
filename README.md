@@ -89,3 +89,4 @@ module "msk" {
 - **Authorization**: MNPI/Public data isolation, RBAC via Athena workgroups
 - **Auditing**: CloudTrail for S3 data access
 - **Network**: Private subnets only, security group isolation
+- **Monitoring**: Prometheus metrics collection, Alertmanager for security alerts

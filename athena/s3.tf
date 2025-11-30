@@ -1,7 +1,3 @@
-# =============================================================================
-# Athena Query Results Bucket
-# =============================================================================
-
 resource "aws_s3_bucket" "athena_results" {
   bucket = "${var.app_name}-athena-results-${var.account_id}-${var.env}"
 

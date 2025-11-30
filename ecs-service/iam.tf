@@ -1,22 +1,8 @@
-################################################################################
-# ECS Task Execution Role
-################################################################################
-
+#TASK EXECUTION ROLE
 resource "aws_iam_role" "ecs_execution" {
-  name = "${var.app_name}-${var.environment}-ecs-execution-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "ecs-tasks.amazonaws.com"
-        }
-      }
-    ]
-  })
+  name                 = "${var.app_name}-${var.environment}-ecs-execution-role"
+  assume_role_policy   = data.aws_iam_policy_document.ecs_assume_role.json
+  permissions_boundary = var.iam_permissions_boundary_arn
 
   tags = merge(
     local.default_tags,
@@ -31,76 +17,31 @@ resource "aws_iam_role_policy_attachment" "ecs_execution_managed" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
-resource "aws_iam_role_policy" "ecs_execution_custom" {
-  name = "${var.app_name}-${var.environment}-ecs-execution-policy"
-  role = aws_iam_role.ecs_execution.id
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid    = "SSMParameterAccess"
-        Effect = "Allow"
-        Action = [
-          "ssm:GetParameters",
-          "ssm:GetParameter",
-          "ssm:GetParametersByPath"
-        ]
-        Resource = "arn:aws:ssm:${var.aws_region}:${var.aws_account_id}:parameter/${var.app_name}/*"
-      },
-      {
-        Sid    = "SecretsManagerAccess"
-        Effect = "Allow"
-        Action = [
-          "secretsmanager:GetSecretValue"
-        ]
-        Resource = "arn:aws:secretsmanager:${var.aws_region}:${var.aws_account_id}:secret:${var.app_name}/*"
-      },
-      {
-        Sid    = "KMSDecrypt"
-        Effect = "Allow"
-        Action = [
-          "kms:Decrypt"
-        ]
-        Resource = "*"
-        Condition = {
-          StringEquals = {
-            "kms:ViaService" = "secretsmanager.${var.aws_region}.amazonaws.com"
-          }
-        }
-      },
-      {
-        Sid    = "CloudWatchLogs"
-        Effect = "Allow"
-        Action = [
-          "logs:CreateLogStream",
-          "logs:PutLogEvents"
-        ]
-        Resource = "arn:aws:logs:${var.aws_region}:${var.aws_account_id}:log-group:/ecs/${var.app_name}-${var.environment}/*"
-      }
-    ]
-  })
+resource "aws_iam_role_policy_attachment" "ecs_execution_ssm" {
+  role       = aws_iam_role.ecs_execution.name
+  policy_arn = aws_iam_policy.ecs_execution_ssm.arn
 }
 
-################################################################################
-# ECS Task Role
-################################################################################
+resource "aws_iam_role_policy_attachment" "ecs_execution_secrets" {
+  role       = aws_iam_role.ecs_execution.name
+  policy_arn = aws_iam_policy.ecs_execution_secrets.arn
+}
 
+resource "aws_iam_role_policy_attachment" "ecs_execution_kms" {
+  role       = aws_iam_role.ecs_execution.name
+  policy_arn = aws_iam_policy.ecs_execution_kms.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_execution_logs" {
+  role       = aws_iam_role.ecs_execution.name
+  policy_arn = aws_iam_policy.ecs_execution_logs.arn
+}
+
+###TASK ROLE
 resource "aws_iam_role" "ecs_task" {
-  name = "${var.app_name}-${var.environment}-ecs-task-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "ecs-tasks.amazonaws.com"
-        }
-      }
-    ]
-  })
+  name                 = "${var.app_name}-${var.environment}-ecs-task-role"
+  assume_role_policy   = data.aws_iam_policy_document.ecs_assume_role.json
+  permissions_boundary = var.iam_permissions_boundary_arn
 
   tags = merge(
     local.default_tags,
@@ -110,54 +51,24 @@ resource "aws_iam_role" "ecs_task" {
   )
 }
 
-resource "aws_iam_role_policy" "ecs_task" {
-  name = "${var.app_name}-${var.environment}-ecs-task-policy"
-  role = aws_iam_role.ecs_task.id
+resource "aws_iam_role_policy_attachment" "ecs_task_ssm" {
+  role       = aws_iam_role.ecs_task.name
+  policy_arn = aws_iam_policy.ecs_task_ssm.arn
+}
 
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid    = "SSMParameterRead"
-        Effect = "Allow"
-        Action = [
-          "ssm:GetParameters",
-          "ssm:GetParameter",
-          "ssm:GetParametersByPath"
-        ]
-        Resource = "arn:aws:ssm:${var.aws_region}:${var.aws_account_id}:parameter/${var.app_name}/*"
-      },
-      {
-        Sid    = "ECSExec"
-        Effect = "Allow"
-        Action = [
-          "ssmmessages:CreateControlChannel",
-          "ssmmessages:CreateDataChannel",
-          "ssmmessages:OpenControlChannel",
-          "ssmmessages:OpenDataChannel"
-        ]
-        Resource = "*"
-      },
-      {
-        Sid    = "CloudWatchMetrics"
-        Effect = "Allow"
-        Action = [
-          "cloudwatch:PutMetricData"
-        ]
-        Resource = "*"
-      },
-      {
-        Sid    = "EFSAccess"
-        Effect = "Allow"
-        Action = [
-          "elasticfilesystem:ClientMount",
-          "elasticfilesystem:ClientWrite",
-          "elasticfilesystem:ClientRootAccess"
-        ]
-        Resource = aws_efs_file_system.this.arn
-      }
-    ]
-  })
+resource "aws_iam_role_policy_attachment" "ecs_task_exec" {
+  role       = aws_iam_role.ecs_task.name
+  policy_arn = aws_iam_policy.ecs_task_exec.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_cloudwatch" {
+  role       = aws_iam_role.ecs_task.name
+  policy_arn = aws_iam_policy.ecs_task_cloudwatch.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_efs" {
+  role       = aws_iam_role.ecs_task.name
+  policy_arn = aws_iam_policy.ecs_task_efs.arn
 }
 
 resource "aws_iam_role_policy_attachment" "ecs_task_additional" {

@@ -1,11 +1,6 @@
-################################################################################
-# Locals for Security Group Rules
-################################################################################
-
 locals {
   name_prefix = "${var.app_name}-${var.environment}"
 
-  # Flatten ALB ingress rules into single map
   alb_ingress_rules = merge(
     # CIDR rules
     {
@@ -35,10 +30,6 @@ locals {
     } : {}
   )
 }
-
-################################################################################
-# ECS Tasks Security Group
-################################################################################
 
 resource "aws_security_group" "ecs_tasks" {
   name        = "${local.name_prefix}-ecs-tasks-sg"
@@ -88,10 +79,7 @@ resource "aws_vpc_security_group_egress_rule" "ecs_outbound" {
   cidr_ipv4         = "0.0.0.0/0"
 }
 
-################################################################################
 # ALB Security Groups (one per service)
-################################################################################
-
 resource "aws_security_group" "alb" {
   for_each = local.services_with_alb
 
@@ -127,10 +115,7 @@ resource "aws_vpc_security_group_egress_rule" "alb_to_ecs" {
   referenced_security_group_id = aws_security_group.ecs_tasks.id
 }
 
-################################################################################
 # EFS Security Group
-################################################################################
-
 resource "aws_security_group" "efs" {
   name        = "${local.name_prefix}-efs-sg"
   description = "EFS mount targets"

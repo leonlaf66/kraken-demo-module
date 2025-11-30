@@ -1,7 +1,4 @@
-################################################################################
 # Cluster Outputs
-################################################################################
-
 output "cluster_id" {
   description = "ECS cluster ID"
   value       = aws_ecs_cluster.this.id
@@ -17,10 +14,7 @@ output "cluster_name" {
   value       = aws_ecs_cluster.this.name
 }
 
-################################################################################
 # Service Outputs
-################################################################################
-
 output "services" {
   description = "Map of ECS service details"
   value = {
@@ -32,7 +26,6 @@ output "services" {
   }
 }
 
-# FIX: Added missing service_arns output
 output "service_arns" {
   description = "Map of ECS service ARNs by service name"
   value = {
@@ -51,10 +44,7 @@ output "task_definitions" {
   }
 }
 
-################################################################################
 # ALB Outputs
-################################################################################
-
 output "alb_arns" {
   description = "Map of ALB ARNs by service name"
   value = {
@@ -76,10 +66,7 @@ output "target_group_arns" {
   }
 }
 
-################################################################################
 # Route53 Outputs
-################################################################################
-
 output "route53_records" {
   description = "Map of Route53 record FQDNs"
   value = {
@@ -87,10 +74,7 @@ output "route53_records" {
   }
 }
 
-################################################################################
 # EFS Outputs
-################################################################################
-
 output "efs_file_system_id" {
   description = "EFS file system ID"
   value       = aws_efs_file_system.this.id
@@ -108,10 +92,7 @@ output "efs_access_points" {
   }
 }
 
-################################################################################
 # Security Group Outputs
-################################################################################
-
 output "ecs_tasks_security_group_id" {
   description = "Security group ID for ECS tasks"
   value       = aws_security_group.ecs_tasks.id
@@ -129,10 +110,7 @@ output "efs_security_group_id" {
   value       = aws_security_group.efs.id
 }
 
-################################################################################
 # IAM Outputs
-################################################################################
-
 output "execution_role_arn" {
   description = "ECS task execution role ARN"
   value       = aws_iam_role.ecs_execution.arn
@@ -143,10 +121,7 @@ output "task_role_arn" {
   value       = aws_iam_role.ecs_task.arn
 }
 
-################################################################################
 # CloudWatch Outputs
-################################################################################
-
 output "log_group_names" {
   description = "Map of CloudWatch log group names by service"
   value = {
@@ -154,10 +129,7 @@ output "log_group_names" {
   }
 }
 
-################################################################################
 # Service Endpoints
-################################################################################
-
 output "service_endpoints" {
   description = "Map of all service endpoints"
   value = {

@@ -1,7 +1,3 @@
-# =============================================================================
-# Athena Module Outputs
-# =============================================================================
-
 output "workgroups" {
   description = "Map of workgroup names to their ARNs"
   value = {
