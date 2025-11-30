@@ -1,52 +1,64 @@
-# =============================================================================
-# KMS Key for MNPI Data
-# =============================================================================
 resource "aws_kms_key" "mnpi" {
-  description             = "KMS Key for MNPI Data Lake (${var.env})"
-  deletion_window_in_days = 7
+  description             = "${var.app_name} MNPI Data Encryption Key - ${var.env}"
+  deletion_window_in_days = 30
   enable_key_rotation     = true
-  
+  multi_region            = false
+
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Sid    = "Enable IAM User Permissions"
+        Sid    = "EnableRootPermissions"
         Effect = "Allow"
-        Principal = { AWS = "arn:aws:iam::${var.account_id}:root" }
+        Principal = {
+          AWS = "arn:aws:iam::${var.account_id}:root"
+        }
         Action   = "kms:*"
         Resource = "*"
       },
+
       {
-        Sid    = "Allow S3 Service"
+        Sid    = "AllowIAMPolicyControl"
         Effect = "Allow"
         Principal = {
-          Service = "s3.amazonaws.com"
+          AWS = "arn:aws:iam::${var.account_id}:root"
         }
         Action = [
+          "kms:Encrypt",
           "kms:Decrypt",
-          "kms:GenerateDataKey"
-        ]
-        Resource = "*"
-        Condition = {
-          StringEquals = {
-            "kms:ViaService" = "s3.${var.region}.amazonaws.com"
-          }
-        }
-      },
-      {
-        Sid    = "Allow Glue Service"
-        Effect = "Allow"
-        Principal = {
-          Service = "glue.amazonaws.com"
-        }
-        Action = [
-          "kms:Decrypt",
+          "kms:ReEncrypt*",
+          "kms:GenerateDataKey*",
           "kms:DescribeKey"
         ]
         Resource = "*"
         Condition = {
           StringEquals = {
-            "kms:ViaService" = "glue.${var.region}.amazonaws.com"
+            "kms:CallerAccount" = var.account_id
+          }
+        }
+      },
+
+      {
+        Sid    = "AllowAWSServices"
+        Effect = "Allow"
+        Principal = {
+          Service = [
+            "s3.amazonaws.com",
+            "glue.amazonaws.com",
+            "athena.amazonaws.com"
+          ]
+        }
+        Action = [
+          "kms:Encrypt",
+          "kms:Decrypt",
+          "kms:ReEncrypt*",
+          "kms:GenerateDataKey*",
+          "kms:DescribeKey"
+        ]
+        Resource = "*"
+        Condition = {
+          StringEquals = {
+            "kms:CallerAccount" = var.account_id
           }
         }
       }
@@ -54,8 +66,9 @@ resource "aws_kms_key" "mnpi" {
   })
 
   tags = merge(var.common_tags, {
-    Name        = "${var.app_name}-mnpi-kms-key"
+    Name        = "${var.app_name}-mnpi-key"
     Sensitivity = "MNPI"
+    Purpose     = "Data Lake Encryption"
   })
 }
 
@@ -64,55 +77,67 @@ resource "aws_kms_alias" "mnpi" {
   target_key_id = aws_kms_key.mnpi.key_id
 }
 
-# =============================================================================
-# KMS Key for Public Data
-# =============================================================================
 resource "aws_kms_key" "public" {
-  description             = "KMS Key for Public Data Lake (${var.env})"
-  deletion_window_in_days = 7
+  description             = "${var.app_name} Public Data Encryption Key - ${var.env}"
+  deletion_window_in_days = 30
   enable_key_rotation     = true
-  
+  multi_region            = false
+
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Sid    = "Enable IAM User Permissions"
+        Sid    = "EnableRootPermissions"
         Effect = "Allow"
-        Principal = { AWS = "arn:aws:iam::${var.account_id}:root" }
+        Principal = {
+          AWS = "arn:aws:iam::${var.account_id}:root"
+        }
         Action   = "kms:*"
         Resource = "*"
       },
+
       {
-        Sid    = "Allow S3 Service"
+        Sid    = "AllowAccountUsage"
         Effect = "Allow"
         Principal = {
-          Service = "s3.amazonaws.com"
+          AWS = "arn:aws:iam::${var.account_id}:root"
         }
         Action = [
+          "kms:Encrypt",
           "kms:Decrypt",
-          "kms:GenerateDataKey"
-        ]
-        Resource = "*"
-        Condition = {
-          StringEquals = {
-            "kms:ViaService" = "s3.${var.region}.amazonaws.com"
-          }
-        }
-      },
-      {
-        Sid    = "Allow Glue Service"
-        Effect = "Allow"
-        Principal = {
-          Service = "glue.amazonaws.com"
-        }
-        Action = [
-          "kms:Decrypt",
+          "kms:ReEncrypt*",
+          "kms:GenerateDataKey*",
           "kms:DescribeKey"
         ]
         Resource = "*"
         Condition = {
           StringEquals = {
-            "kms:ViaService" = "glue.${var.region}.amazonaws.com"
+            "kms:CallerAccount" = var.account_id
+          }
+        }
+      },
+
+      {
+        Sid    = "AllowAWSServices"
+        Effect = "Allow"
+        Principal = {
+          Service = [
+            "s3.amazonaws.com",
+            "glue.amazonaws.com",
+            "athena.amazonaws.com"
+          ]
+        }
+        Action = [
+          "kms:Encrypt",
+          "kms:Decrypt",
+          "kms:ReEncrypt*",
+          "kms:GenerateDataKey*",
+          "kms:DescribeKey"
+        ]
+        Resource = "*"
+        Condition = {
+          StringEquals = {
+            "kms:CallerAccount" = var.account_id
           }
         }
       }
@@ -120,8 +145,9 @@ resource "aws_kms_key" "public" {
   })
 
   tags = merge(var.common_tags, {
-    Name        = "${var.app_name}-public-kms-key"
+    Name        = "${var.app_name}-public-key"
     Sensitivity = "Public"
+    Purpose     = "Data Lake Encryption"
   })
 }
 
