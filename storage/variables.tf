@@ -23,7 +23,6 @@ variable "common_tags" {
   description = "Common tags for all resources"
 }
 
-variable "audit_bucket_name" {
-  type        = string
-  description = "The name of the S3 bucket where CloudTrail logs should be stored (must exist)"
-}
+# FIX: Removed unused audit_bucket_name variable
+# The audit bucket is created internally by the module in cloud_trail.tf
+# as aws_s3_bucket.audit with naming convention: ${var.app_name}-cloudtrail-logs-${var.account_id}-${var.env}

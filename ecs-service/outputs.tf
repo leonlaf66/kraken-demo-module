@@ -32,6 +32,14 @@ output "services" {
   }
 }
 
+# FIX: Added missing service_arns output
+output "service_arns" {
+  description = "Map of ECS service ARNs by service name"
+  value = {
+    for k, v in aws_ecs_service.this : k => v.id
+  }
+}
+
 output "task_definitions" {
   description = "Map of task definition ARNs"
   value = {
