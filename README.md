@@ -18,22 +18,38 @@ Terraform modules for building a secure, auditable AWS Data Lake platform.
 ## Architecture
 
 ```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│  PostgreSQL │────▶│   MSK       │────▶│  S3 Data    │
-│  (database) │ CDC │  (msk)      │     │  Lake       │
-└─────────────┘     └─────────────┘     │  (storage)  │
-                           │            └─────────────┘
-                    ┌──────┴──────┐            │
-                    │ MSK Connect │            │
-                    │ (msk-connect)            ▼
-                    └─────────────┘     ┌─────────────┐
-                                        │   Athena    │
-┌─────────────┐                         │  (athena)   │
-│    ECS      │◀────────────────────────└─────────────┘
-│(ecs-service)│  Schema Registry,
-│             │  Cruise Control,
-└─────────────┘  Prometheus
+                                    ┌─────────────────────────────────────┐
+                                    │         ECS (ecs-service)           │
+                                    │  Schema Registry, Cruise Control,   │
+                                    │     Prometheus, Alertmanager        │
+                                    └──────────────────┬──────────────────┘
+                                                       │
+                                              (schema management)
+                                                       │
+                                                       ▼
+┌─────────────┐    ┌─────────────────────┐    ┌─────────────┐    ┌─────────────────────┐    ┌─────────────┐
+│  RDS        │───▶│  MSK Connect        │───▶│    MSK      │───▶│  MSK Connect        │───▶│  S3 Data    │
+│  (database) │    │  Debezium Source    │    │   (msk)     │    │  S3 Sink            │    │  Lake       │
+│             │CDC │  (msk-connect)      │    │             │    │  (msk-connect)      │    │  (storage)  │
+└─────────────┘    └─────────────────────┘    └─────────────┘    └─────────────────────┘    └──────┬──────┘
+                                                                                                   │
+                                                                                                   │
+                                                                                           ┌───────▼───────┐
+                                                                                           │    Athena     │
+                                                                                           │   (athena)    │
+                                                                                           └───────────────┘
 ```
+
+**Data Flow:**
+1. **RDS → Debezium**: CDC captures changes from PostgreSQL
+2. **Debezium → MSK**: Events published to Kafka topics (MNPI/Public separated)
+3. **MSK → S3 Sink**: S3 Sink connectors write to Data Lake buckets
+4. **S3 → Athena**: Query engine for analytics
+
+**Supporting Services (ECS):**
+- Schema Registry: Manages Avro/JSON schemas for Kafka
+- Cruise Control: Kafka cluster management and rebalancing
+- Prometheus/Alertmanager: Monitoring and alerting
 
 ## Usage
 
