@@ -29,8 +29,8 @@ output "nlb_dns_name" {
 }
 
 output "route53_dns_name" {
-  description = "Route53 DNS name for MSK bootstrap (null if not configured)"
-  value       = var.private_hosted_zone_id != "" ? "kafka-bootstrap.${var.app_name}.internal" : null
+  description = "Route53 DNS name for MSK bootstrap"
+  value       = "kafka-bootstrap.${var.app_name}.internal"
 }
 
 output "security_group_id" {

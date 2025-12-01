@@ -1,6 +1,6 @@
 # MSK Module
 
-Amazon MSK cluster with SCRAM authentication, NLB endpoint, and optional Route53 DNS.
+Amazon MSK cluster with SCRAM authentication, NLB endpoint, and Route53 DNS.
 
 ## Resources Created
 
@@ -10,7 +10,7 @@ Amazon MSK cluster with SCRAM authentication, NLB endpoint, and optional Route53
 - Secrets Manager secrets (SCRAM users)
 - CloudWatch log group
 - Security group
-- Optional Route53 record
+- Route53 record
 
 ## Usage
 

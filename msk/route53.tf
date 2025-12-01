@@ -1,5 +1,4 @@
 resource "aws_route53_record" "bootstrap" {
-  count   = var.private_hosted_zone_id != "" ? 1 : 0
   zone_id = var.private_hosted_zone_id
   name    = "kafka-bootstrap" 
   type    = "A"
