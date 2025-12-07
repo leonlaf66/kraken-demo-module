@@ -30,7 +30,7 @@ resource "aws_lb_target_group" "msk_tg_scram" {
 resource "aws_lb_target_group_attachment" "brokers_scram" {
   count = var.number_of_broker_nodes
 
-  target_group_arn = aws_lb_target_group.scram.arn
+  target_group_arn = aws_lb_target_group.msk_tg_scram.arn
   target_id        = data.aws_msk_broker_nodes.nodes.node_info_list[count.index].client_vpc_ip_address
   port             = 9096
 
