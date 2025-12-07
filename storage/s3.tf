@@ -30,6 +30,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "access_logs" {
     id     = "access-logs-lifecycle"
     status = "Enabled"
 
+    filter {}
+
     transition {
       days          = var.access_log_retention_days
       storage_class = "GLACIER"
@@ -142,6 +144,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "datalake" {
   rule {
     id     = "standard-lifecycle"
     status = "Enabled"
+
+    filter {}
 
     transition {
       days          = 30
